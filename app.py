@@ -2,6 +2,8 @@ import streamlit as st
 from pathlib import Path
 import base64
 import json
+import io
+from PIL import Image, ImageDraw, ImageFont
 
 st.set_page_config(
     page_title="Russell's Circumplex Model of Affect",
@@ -243,6 +245,109 @@ def build_grid_html():
     return html
 
 
+@st.cache_data
+def generate_grid_image():
+    cell_px = 150
+    gap = 3
+    margin_left = 120
+    margin_top = 80
+    margin_bottom = 50
+    margin_right = 20
+    grid_w = 10 * cell_px + 9 * gap
+    grid_h = 10 * cell_px + 9 * gap
+    img_w = margin_left + grid_w + margin_right
+    img_h = margin_top + grid_h + margin_bottom
+
+    canvas = Image.new("RGB", (img_w, img_h), "#ffffff")
+    draw = ImageDraw.Draw(canvas)
+
+    try:
+        title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 22)
+        label_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11)
+        axis_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 14)
+        quad_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 13)
+    except OSError:
+        title_font = ImageFont.load_default()
+        label_font = ImageFont.load_default()
+        axis_font = ImageFont.load_default()
+        quad_font = ImageFont.load_default()
+
+    title = "Russell's Circumplex Model of Affect"
+    bbox = draw.textbbox((0, 0), title, font=title_font)
+    tw = bbox[2] - bbox[0]
+    draw.text(((img_w - tw) // 2, 10), title, fill="#222222", font=title_font)
+
+    draw.text((margin_left + grid_w // 2 - 30, margin_top - 22), "Valence →", fill="#444", font=axis_font)
+
+    arousal_text = "← Arousal"
+    temp_img = Image.new("RGBA", (200, 30), (255, 255, 255, 0))
+    temp_draw = ImageDraw.Draw(temp_img)
+    temp_draw.text((0, 0), arousal_text, fill="#444", font=axis_font)
+    rotated = temp_img.rotate(90, expand=True)
+    canvas.paste(rotated, (5, margin_top + grid_h // 2 - 50), rotated)
+
+    draw.rectangle(
+        [margin_left - 1, margin_top - 1, margin_left + grid_w + 1, margin_top + grid_h + 1],
+        outline="#333333", width=2
+    )
+
+    for row in range(10):
+        for col in range(10):
+            x = margin_left + col * (cell_px + gap)
+            y = margin_top + row * (cell_px + gap)
+
+            emotion = EMOTIONS[row][col]
+            img_path = get_image_path(row, col)
+
+            if img_path.exists():
+                face = Image.open(img_path).resize((cell_px, cell_px), Image.LANCZOS)
+                canvas.paste(face, (x, y))
+            else:
+                color = get_cell_color(row, col)
+                draw.rectangle([x, y, x + cell_px, y + cell_px], fill=color)
+
+            label_y = y + cell_px - 20
+            draw.rectangle([x, label_y, x + cell_px, y + cell_px], fill=(0, 0, 0, 180))
+            overlay = Image.new("RGBA", (cell_px, 20), (0, 0, 0, 180))
+            canvas.paste(Image.alpha_composite(
+                Image.new("RGBA", (cell_px, 20), (0, 0, 0, 0)), overlay
+            ), (x, label_y))
+            lbbox = draw.textbbox((0, 0), emotion, font=label_font)
+            lw = lbbox[2] - lbbox[0]
+            draw.text((x + (cell_px - lw) // 2, label_y + 3), emotion, fill="white", font=label_font)
+
+    for row in range(10):
+        y = margin_top + row * (cell_px + gap) + cell_px // 2 - 6
+        draw.text((25, y), AROUSAL_LABELS[row], fill="#555", font=label_font)
+
+    for col in range(10):
+        x = margin_left + col * (cell_px + gap)
+        vlabel = VALENCE_LABELS[col].replace("\n", " ")
+        vbbox = draw.textbbox((0, 0), vlabel, font=label_font)
+        vw = vbbox[2] - vbbox[0]
+        draw.text((x + (cell_px - vw) // 2, margin_top - 16), vlabel, fill="#555", font=label_font)
+
+    mid_x = margin_left + 5 * (cell_px + gap) - gap // 2
+    mid_y = margin_top + 5 * (cell_px + gap) - gap // 2
+    draw.line([(margin_left, mid_y), (margin_left + grid_w, mid_y)], fill="#ffffff", width=3)
+    draw.line([(mid_x, margin_top), (mid_x, margin_top + grid_h)], fill="#ffffff", width=3)
+
+    quad_labels = [
+        ("High Arousal / Unpleasant", margin_left + cell_px, margin_top + cell_px),
+        ("High Arousal / Pleasant", margin_left + grid_w - cell_px * 3, margin_top + cell_px),
+        ("Low Arousal / Unpleasant", margin_left + cell_px, margin_top + grid_h - cell_px * 2),
+        ("Low Arousal / Pleasant", margin_left + grid_w - cell_px * 3, margin_top + grid_h - cell_px * 2),
+    ]
+    for text, qx, qy in quad_labels:
+        draw.text((qx, qy), text, fill="white", font=quad_font,
+                  stroke_width=2, stroke_fill="black")
+
+    buf = io.BytesIO()
+    canvas.save(buf, format="PNG", quality=95)
+    buf.seek(0)
+    return buf.getvalue()
+
+
 st.markdown("""
 <h1 style="text-align:center; margin-bottom:0;">Russell's Circumplex Model of Affect</h1>
 <p style="text-align:center; color:#666; margin-top:4px; margin-bottom:20px;">
@@ -255,6 +360,17 @@ col_left, col_center, col_right = st.columns([1, 10, 1])
 with col_center:
     grid_html = build_grid_html()
     st.components.v1.html(grid_html, height=1420, scrolling=True)
+
+dl_col1, dl_col2, dl_col3 = st.columns([4, 2, 4])
+with dl_col2:
+    png_data = generate_grid_image()
+    st.download_button(
+        label="Download Grid as Image",
+        data=png_data,
+        file_name="russells_circumplex_model.png",
+        mime="image/png",
+        use_container_width=True,
+    )
 
 st.markdown("---")
 
