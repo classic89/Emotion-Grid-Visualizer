@@ -209,19 +209,14 @@ def build_grid_html():
         y = row * (cell_size + 2)
         html += f'<div class="arousal-label" style="top:{y + cell_size//2 - 10}px; left:-{label_width}px;">{AROUSAL_LABELS[row]}</div>'
 
-    grid_total = cell_size * 10 + 2 * 9
-    mid_h = 5 * cell_size + 4 * 2 + cell_size // 2
-    mid_v = 5 * cell_size + 4 * 2 + cell_size // 2
+    mid_pos = 5 * (cell_size + 2)
 
-    html += f'<div class="axis-line-h" style="top:{mid_h}px;"></div>'
-    html += f'<div class="axis-line-v" style="left:{mid_v}px;"></div>'
+    html += f'<div class="axis-line-h" style="top:{mid_pos - 1}px;"></div>'
+    html += f'<div class="axis-line-v" style="left:{mid_pos - 1}px;"></div>'
 
     q_pad_x = cell_size * 1.2
     q_pad_y = cell_size * 1.0
-    html += f'<div class="quadrant-label" style="left:{q_pad_x}px; top:{q_pad_y}px;">High Arousal<br>Unpleasant</div>'
-    html += f'<div class="quadrant-label" style="right:{q_pad_x}px; top:{q_pad_y}px;">High Arousal<br>Pleasant</div>'
-    html += f'<div class="quadrant-label" style="left:{q_pad_x}px; bottom:{q_pad_y}px;">Low Arousal<br>Unpleasant</div>'
-    html += f'<div class="quadrant-label" style="right:{q_pad_x}px; bottom:{q_pad_y}px;">Low Arousal<br>Pleasant</div>'
+
 
     html += '<div class="emotion-grid">'
 
