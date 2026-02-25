@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 EMOTIONS = [
-    ["Enraged", "Furious", "Panicked", "Alarmed", "Tense", "Alert", "Excited", "Thrilled", "Ecstatic", "Euphoric"],
+    ["Enraged", "Furious", "Panicked", "Alarmed", "Tense", "Surprised", "Excited", "Thrilled", "Ecstatic", "Euphoric"],
     ["Hostile", "Angry", "Frightened", "Anxious", "Nervous", "Energized", "Enthusiastic", "Elated", "Joyful", "Overjoyed"],
     ["Hateful", "Aggressive", "Distressed", "Worried", "Uneasy", "Stimulated", "Amused", "Cheerful", "Delighted", "Blissful"],
     ["Disgusted", "Annoyed", "Frustrated", "Irritated", "Restless", "Interested", "Pleased", "Happy", "Glad", "Exhilarated"],
@@ -19,7 +19,7 @@ EMOTIONS = [
     ["Despondent", "Sorrowful", "Sad", "Down", "Bored", "Calm", "Relaxed", "Serene", "Peaceful", "Grateful"],
     ["Depressed", "Hopeless", "Dejected", "Drained", "Lethargic", "Tranquil", "Restful", "Soothed", "Placid", "Contented"],
     ["Despairing", "Anguished", "Weary", "Fatigued", "Sluggish", "Still", "Drowsy", "Cozy", "Laid-back", "Carefree"],
-    ["Devastated", "Grief-stricken", "Exhausted", "Tired", "Sleepy", "Passive", "Idle", "Dreamy", "Zen", "Asleep"],
+    ["Devastated", "Grief-stricken", "Exhausted", "Tired", "Sleepy", "Passive", "Idle", "Dreamy", "Zen", "Serene"],
 ]
 
 AROUSAL_LABELS = [
