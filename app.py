@@ -155,6 +155,39 @@ def build_grid_html():
             font-size: 13px;
             font-weight: 600;
         }}
+        .axis-line-h {{
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+            z-index: 50;
+            pointer-events: none;
+        }}
+        .axis-line-v {{
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+            z-index: 50;
+            pointer-events: none;
+        }}
+        .quadrant-label {{
+            position: absolute;
+            z-index: 51;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.7), 0 0 10px rgba(0,0,0,0.5);
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.3;
+        }}
     </style>
     <div class="circumplex-container">
         <div class="axis-title" style="position:absolute; left:{label_width + cell_size*5 - 60}px; top:0; text-align:center;">
@@ -175,6 +208,20 @@ def build_grid_html():
     for row in range(10):
         y = row * (cell_size + 2)
         html += f'<div class="arousal-label" style="top:{y + cell_size//2 - 10}px; left:-{label_width}px;">{AROUSAL_LABELS[row]}</div>'
+
+    grid_total = cell_size * 10 + 2 * 9
+    mid_h = 5 * cell_size + 4 * 2 + cell_size // 2
+    mid_v = 5 * cell_size + 4 * 2 + cell_size // 2
+
+    html += f'<div class="axis-line-h" style="top:{mid_h}px;"></div>'
+    html += f'<div class="axis-line-v" style="left:{mid_v}px;"></div>'
+
+    q_pad_x = cell_size * 1.2
+    q_pad_y = cell_size * 1.0
+    html += f'<div class="quadrant-label" style="left:{q_pad_x}px; top:{q_pad_y}px;">High Arousal<br>Unpleasant</div>'
+    html += f'<div class="quadrant-label" style="right:{q_pad_x}px; top:{q_pad_y}px;">High Arousal<br>Pleasant</div>'
+    html += f'<div class="quadrant-label" style="left:{q_pad_x}px; bottom:{q_pad_y}px;">Low Arousal<br>Unpleasant</div>'
+    html += f'<div class="quadrant-label" style="right:{q_pad_x}px; bottom:{q_pad_y}px;">Low Arousal<br>Pleasant</div>'
 
     html += '<div class="emotion-grid">'
 
